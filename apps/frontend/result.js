@@ -1,5 +1,7 @@
 console.log("Analysis result UI loaded");
 
+const API_BASE_URL = "http://localhost:8000";
+
 const video = document.getElementById("analysisVideo");
 const canvas = document.getElementById("skeletonCanvas");
 const ctx = canvas.getContext("2d");
@@ -7,7 +9,10 @@ const durationEl = document.getElementById("videoDuration");
 
 // Load analysis data from sessionStorage
 const analysisData = JSON.parse(sessionStorage.getItem('analysisData') || '{}');
-console.log("Loaded analysis data:", analysisData);
+console.log("=== ANALYSIS DATA LOADED ===");
+console.log("Full data:", analysisData);
+console.log("Has key_moments?", !!analysisData.key_moments);
+console.log("Key moments count:", analysisData.key_moments?.length || 0);
 
 // Update page with analysis data
 if (analysisData.analysis) {
@@ -38,31 +43,58 @@ if (analysisData.analysis) {
 }
 
 // Load and display key moments
+console.log("=== KEY MOMENTS SECTION ===");
+console.log("Checking key_moments:", analysisData.key_moments);
+
 if (analysisData.key_moments && analysisData.key_moments.length > 0) {
-  console.log('Loading key moments:', analysisData.key_moments);
+  console.log('✓ Loading key moments:', analysisData.key_moments);
   
   const grid = document.getElementById('keyMomentsGrid');
-  grid.innerHTML = '';
   
-  analysisData.key_moments.forEach(moment => {
-    const card = document.createElement('div');
-    card.className = 'moment-card';
+  if (grid) {
+    grid.innerHTML = '';
     
-    const imageUrl = `${API_BASE_URL}/image/${moment.image}`;
+    analysisData.key_moments.forEach((moment, index) => {
+      console.log(`Creating card for moment ${index}:`, moment);
+      
+      const card = document.createElement('div');
+      card.className = 'moment-card';
+      
+      const imageUrl = `${API_BASE_URL}/image/${moment.image}`;
+      console.log(`Image URL: ${imageUrl}`);
+      
+      card.innerHTML = `
+        <img src="${imageUrl}" alt="${moment.label}" class="moment-image" 
+             onerror="console.error('Failed to load image:', '${imageUrl}'); this.style.display='none';"
+             onload="console.log('✓ Image loaded:', '${moment.image}')">
+        <div class="moment-info">
+          <div class="moment-label">${moment.label}</div>
+          <div class="moment-time">Time: ${moment.time.toFixed(2)}s</div>
+        </div>
+      `;
+      
+      grid.appendChild(card);
+    });
     
-    card.innerHTML = `
-      <img src="${imageUrl}" alt="${moment.label}" class="moment-image" 
-           onerror="this.style.display='none'">
-      <div class="moment-info">
-        <div class="moment-label">${moment.label}</div>
-        <div class="moment-time">Time: ${moment.time.toFixed(2)}s</div>
+    console.log(`✓ Created ${analysisData.key_moments.length} moment cards`);
+  } else {
+    console.error("✗ keyMomentsGrid element not found!");
+  }
+} else {
+  console.warn("✗ No key moments available in data");
+  
+  const grid = document.getElementById('keyMomentsGrid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="moment-placeholder">
+        <div class="moment-image-placeholder"></div>
+        <div class="moment-label">No key moments available</div>
+        <div style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">
+          Upload a new video to generate key moment frames.
+        </div>
       </div>
     `;
-    
-    grid.appendChild(card);
-  });
-  
-  console.log('✓ Key moments displayed');
+  }
 }
 
 // Update video source if available
@@ -78,7 +110,6 @@ if (analysisData.saved_as) {
 
 // Load keypoints from backend (real AI analysis)
 let keypointsData = [];
-const API_BASE_URL = "http://localhost:8000";
 
 // Load real keypoints if available
 if (analysisData.keypoints_file) {

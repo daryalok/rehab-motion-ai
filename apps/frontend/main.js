@@ -124,7 +124,15 @@ uploadButton.addEventListener("click", () => {
         console.log("Analysis result displayed in UI");
         
         // Save analysis data to sessionStorage for result page
+        console.log("=== SAVING TO SESSION STORAGE ===");
+        console.log("Data to save:", data);
+        console.log("Key moments in data:", data.key_moments);
+        
         sessionStorage.setItem('analysisData', JSON.stringify(data));
+        
+        // Verify saved
+        const saved = sessionStorage.getItem('analysisData');
+        console.log("✓ Saved to sessionStorage, length:", saved?.length);
         
         // Redirect to result page after 2 seconds
         setTimeout(() => {

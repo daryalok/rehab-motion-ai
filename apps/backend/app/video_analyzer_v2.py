@@ -56,18 +56,17 @@ class VideoAnalyzer:
                 urllib.request.urlretrieve(POSE_LANDMARKER_MODEL_URL, model_path)
                 logger.info("✓ Model downloaded")
             
-            # Create PoseLandmarker options
+            # Create PoseLandmarker options (IMAGE mode for simpler processing)
             base_options = python.BaseOptions(model_asset_path=str(model_path))
             options = vision.PoseLandmarkerOptions(
                 base_options=base_options,
-                running_mode=vision.RunningMode.VIDEO,
+                running_mode=vision.RunningMode.IMAGE,
                 min_pose_detection_confidence=0.5,
-                min_pose_presence_confidence=0.5,
-                min_tracking_confidence=0.5
+                min_pose_presence_confidence=0.5
             )
             
             self.detector = vision.PoseLandmarker.create_from_options(options)
-            logger.info("✓ MediaPipe Pose Landmarker initialized successfully (NEW API)")
+            logger.info("✓ MediaPipe Pose Landmarker initialized successfully (IMAGE mode)")
             
         except Exception as e:
             logger.error(f"Failed to initialize MediaPipe: {e}")
@@ -115,11 +114,8 @@ class VideoAnalyzer:
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
                 
-                # Calculate timestamp in milliseconds
-                timestamp_ms = int((frame_count / fps) * 1000) if fps > 0 else frame_count * 33
-                
-                # Detect pose
-                detection_result = self.detector.detect_for_video(mp_image, timestamp_ms)
+                # Detect pose (IMAGE mode)
+                detection_result = self.detector.detect(mp_image)
                 
                 if detection_result.pose_landmarks:
                     keypoints = self._extract_keypoints(detection_result.pose_landmarks[0])
@@ -223,7 +219,7 @@ class VideoAnalyzer:
                        f"Knee asymmetry: {avg_knee_asymmetry:.3f} (max: {max_knee_asymmetry:.3f})")
             
             return {
-                "compensation_detected": compensation_detected,
+                "compensation_detected": bool(compensation_detected),
                 "knee_flexion_angle": 32,
                 "message": "Load shifts to healthy leg at 32° knee flexion" if compensation_detected 
                           else "No significant compensation detected",
