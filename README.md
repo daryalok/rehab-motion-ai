@@ -3,6 +3,7 @@
 ## 🦵 Post-ACL Knee Rehabilitation with Real Feedback at Home
 
 We help physiotherapists see invisible ACL compensations during home rehabilitation using AI and a simple camera.
+
 <img width="1536" height="1024" alt="rehab" src="https://github.com/user-attachments/assets/2f6fc218-9f5e-4bfb-be46-8a0a212d0d51" />
 
 ---
@@ -123,4 +124,4 @@ Vercel / Railway
 
 ## 📞 Contact & Support
 
-For more information, please reach out to our team.
+For more information, please reach on Discord klimb_d 
