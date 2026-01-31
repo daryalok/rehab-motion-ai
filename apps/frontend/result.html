@@ -28,19 +28,21 @@
         </div>
         <div class="status">
           <span class="label">Patient ID</span>
-          <span>1842</span>
+          <span id="patientId">1842</span>
         </div>
       </section>
 
       <section class="card result-card">
         <div class="result-layout">
           <div class="video-preview">
-            <div class="video-frame">
-              <div class="play-icon">▶</div>
-              <div class="video-label">Squat Assessment Preview</div>
+            <div class="video-container">
+              <video id="analysisVideo" controls>
+                Your browser does not support video.
+              </video>
+              <canvas id="skeletonCanvas"></canvas>
             </div>
             <div class="video-meta">
-              <div>Duration: 00:24</div>
+              <div>Duration: <span id="videoDuration">--:--</span></div>
               <div>Captured: Today, 14:12</div>
             </div>
           </div>
@@ -71,6 +73,42 @@
           </div>
         </div>
       </section>
+
+      <section class="card">
+        <h2>Key Moments</h2>
+        <p class="helper">Critical frames identified during squat analysis</p>
+        
+        <div class="key-moments-grid" id="keyMomentsGrid">
+          <!-- Key moments will be loaded here by JavaScript -->
+          <div class="moment-placeholder">
+            <div class="moment-image-placeholder"></div>
+            <div class="moment-label">Loading...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Detailed Metrics</h2>
+        <div class="metrics-grid" id="metricsGrid">
+          <div class="metric-card">
+            <div class="metric-label">Avg Hip Shift</div>
+            <div class="metric-value" id="metricHipShift">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Max Hip Shift</div>
+            <div class="metric-value" id="metricMaxHipShift">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Knee Asymmetry</div>
+            <div class="metric-value" id="metricKneeAsymmetry">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Max Asymmetry</div>
+            <div class="metric-value" id="metricMaxAsymmetry">--</div>
+          </div>
+        </div>
+      </section>
     </main>
+    <script src="./result.js"></script>
   </body>
 </html>

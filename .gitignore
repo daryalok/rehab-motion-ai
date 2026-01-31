@@ -5,3 +5,13 @@ __pycache__/
 node_modules/
 dist/
 .DS_Store
+
+# Uploaded videos
+data/uploads/*
+!data/uploads/.gitkeep
+
+# MediaPipe models
+*.task
+
+# Test files
+test_*.py

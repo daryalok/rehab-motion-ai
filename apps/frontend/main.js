@@ -54,15 +54,27 @@ dropzone.addEventListener("drop", (event) => {
 });
 
 uploadButton.addEventListener("click", () => {
+  console.log("=== UPLOAD BUTTON CLICKED ===");
+  
   if (isUploading) {
+    console.log("Already uploading, ignoring click");
     return;
   }
 
   const [file] = videoInput.files;
+  console.log("Selected file:", file);
+  
   if (!file) {
+    console.log("No file selected, opening file picker");
     videoInput.click();
     return;
   }
+
+  console.log(`File details:
+    Name: ${file.name}
+    Type: ${file.type}
+    Size: ${file.size} bytes (${(file.size / (1024*1024)).toFixed(2)} MB)
+  `);
 
   isUploading = true;
   uploadButton.disabled = true;
@@ -72,25 +84,63 @@ uploadButton.addEventListener("click", () => {
 
   const formData = new FormData();
   formData.append("file", file);
+  
+  console.log("FormData created, sending to:", `${API_BASE_URL}/upload`);
 
   fetch(`${API_BASE_URL}/upload`, {
     method: "POST",
     body: formData,
   })
     .then(async (response) => {
+      console.log("Response received:", response.status, response.statusText);
+      
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+        console.error("Upload failed:", error);
         throw new Error(error.detail || "Upload failed");
       }
       return response.json();
     })
     .then((data) => {
-      uploadStatus.textContent = `Uploaded: ${data.filename} (${data.size_bytes} bytes)`;
+      console.log("✓ Upload successful, response data:", data);
+      
+      uploadStatus.textContent = `✓ Uploaded and analyzed: ${data.filename}`;
       uploadStatus.className = "upload-status success";
+      
+      // Show analysis result
+      if (data.analysis) {
+        console.log("Analysis result:", data.analysis);
+        
+        const analysisInfo = document.createElement("div");
+        analysisInfo.className = "analysis-result";
+        analysisInfo.innerHTML = `
+          <strong>Analysis Result:</strong><br>
+          ${data.analysis.message}<br>
+          <em>${data.analysis.recommendation}</em><br><br>
+          Redirecting to detailed analysis...
+        `;
+        uploadStatus.appendChild(analysisInfo);
+        
+        console.log("Analysis result displayed in UI");
+        
+        // Save analysis data to sessionStorage for result page
+        sessionStorage.setItem('analysisData', JSON.stringify(data));
+        
+        // Redirect to result page after 2 seconds
+        setTimeout(() => {
+          console.log("Redirecting to result.html");
+          window.location.href = 'result.html';
+        }, 2000);
+      } else {
+        console.warn("No analysis data in response");
+      }
+      
       setSelectedFile(null);
       videoInput.value = "";
+      console.log("=== UPLOAD COMPLETE ===");
     })
     .catch((error) => {
+      console.error("Upload error:", error);
       uploadStatus.textContent = `Upload error: ${error.message}`;
       uploadStatus.className = "upload-status error";
     })
@@ -98,5 +148,6 @@ uploadButton.addEventListener("click", () => {
       uploadButton.textContent = "Upload video";
       uploadButton.disabled = false;
       isUploading = false;
+      console.log("Upload process finished");
     });
 });
