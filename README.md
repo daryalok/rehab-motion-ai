@@ -1,50 +1,125 @@
-# Cursor 2-Day AI Hackathon — Repo Template
+# 🏥 InsideMotion — AI Rehab Inside the Body
 
-![Cursor 2-Day AI Hackathon](https://ai-beavers.com/_next/image?url=%2Fimages%2Fhackathon-hero-20012026.png&w=1920&q=75)
+## 🦵 Post-ACL Knee Rehabilitation with Real Feedback at Home
 
-**How to use this template:**
-1. Click "Use this template" → "Create a new repository"
-2. Name your repo and set it to **Public**
-3. Replace this section with your project name and description
+We help physiotherapists see invisible ACL compensations during home rehabilitation using AI and a simple camera.
 
 ---
 
-# Project Name
+## 🩺 Problem
 
-> One-line description of your project
+In Germany, post-ACL rehabilitation is **structurally limited**.
 
-## Tech Stack
+- Patients typically receive **~6 physiotherapy sessions** of 20 minutes
+- This is **not enough** to retrain correct movement patterns
+- Most rehabilitation happens **at home, without supervision**
+- Therapists only see **short snapshots** — compensations develop invisibly
+- Patients are expected to self-rehab, but receive **no feedback**
 
-What technologies power your project?
+> ⚠️ **This is not a motivation problem.**  
+> **It's a feedback gap.**
 
-<!-- List your main technologies, frameworks, and services -->
+### 🔴 Undetected load avoidance and asymmetry lead to:
 
-- **Frontend**: e.g., Next.js, React, Tailwind
-- **Backend**: e.g., Node.js, Python, FastAPI
-- **Database**: e.g., Supabase, Firebase, PostgreSQL
-- **AI/ML**: e.g., OpenAI GPT-4, Gemini Pro
-- **Hosting**: e.g., Vercel, Railway
+- ⏱️ **Delayed recovery**
+- 📉 **Stalled progress**
+- 🚨 **Higher re-injury risk**
+- 💰 **Increased long-term costs** for insurers
 
-## How to Run
+---
 
-Step-by-step instructions to run the project locally, including everything that needs to be set up.
+## 💡 Solution
 
-```bash
-# Clone the repo
-git clone https://github.com/your-team/your-project.git
-cd your-project
+InsideMotion extends the therapist's eyes into the patient's home.
 
-# Install dependencies
-npm install
+Using only a **camera** and **AI-based motion analysis**, we:
 
-# Set up environment variables
-cp .env.example .env
-# Add your API keys to .env
+- ✅ **Detect** load avoidance on the injured knee
+- 👁️ **Visualize** compensation patterns invisible to the naked eye
+- 📊 **Provide** clinically useful insights to physiotherapists
+- 🏠 **Enable** safe, feedback-driven home rehabilitation
 
-# Run the development server
-npm run dev
+> 🎯 **We don't diagnose.**  
+> 🎯 **We don't replace clinicians.**  
+> 🎯 **We provide decision support.**
+
+---
+
+## 👥 Users & Customers
+
+| Role | Description |
+|------|-------------|
+| 👨‍⚕️ **Primary User** | Physiotherapist |
+| 📹 **Data Source** | Patient (at home) |
+| 💼 **Customer** | German health insurers & rehabilitation clinics |
+
+### 💡 Why insurers care:
+
+- 💰 **Preventing one ACL re-injury** offsets the cost of thousands of AI sessions
+- ⚡ **Faster return to work**
+- 📉 **Lower long-term disability costs**
+
+---
+
+## 🧠 What the AI Does (MVP Scope)
+
+### 📋 Use Case
+- **Focus:** Post-ACL knee rehab
+- **Exercise:** Bodyweight squat
+
+### 🔍 From a simple video, the system:
+
+1. 🦴 **Extracts** skeletal pose
+2. 📐 **Analyzes** knee flexion symmetry
+3. ⚖️ **Tracks** hip shift and center-of-mass drift
+4. 🚨 **Detects** early load escape to the healthy leg
+
+### 💬 Example insight:
+
+> *"At 32° knee flexion, load shifts to the healthy leg — a typical post-ACL compensation."*
+
+---
+
+## 🧪 Why This Is Different
+
+- 🎯 We **don't judge correctness** — we detect avoidance behavior
+- 📊 We compare patients to **themselves over time**, not to population norms
+- 📈 We focus on **longitudinal recovery patterns**
+- 👨‍⚕️ **Human-in-the-loop** by design (therapist-first)
+
+> 🔬 **X-ray vision for movement.**
+
+---
+
+## 🛠️ Tech Stack
+
+### 🎨 Frontend
+```
+React, Next.js, Tailwind
 ```
 
-## Details
+### ⚙️ Backend
+```
+Python, FastAPI
+```
 
-Add anything else you want to share: architecture diagrams, screenshots, challenges faced, future plans, etc.
+### 🤖 AI / CV
+```
+Pose Estimation, Biomechanical Feature Extraction
+```
+
+### 🧮 Logic
+```
+Rule-based + lightweight ML for compensation detection
+```
+
+### ☁️ Hosting
+```
+Vercel / Railway
+```
+
+---
+
+## 📞 Contact & Support
+
+For more information, please reach out to our team.
