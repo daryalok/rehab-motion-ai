@@ -69,7 +69,6 @@ if (analysisData.key_moments && analysisData.key_moments.length > 0) {
              onload="console.log('✓ Image loaded:', '${moment.image}')">
         <div class="moment-info">
           <div class="moment-label">${moment.label}</div>
-          <div class="moment-time">Time: ${moment.time.toFixed(2)}s</div>
         </div>
       `;
       
