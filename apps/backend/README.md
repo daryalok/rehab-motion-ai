@@ -14,3 +14,9 @@ Health check:
 ```
 curl http://localhost:8000/health
 ```
+
+Upload test:
+
+```
+curl -F "file=@/path/to/video.mp4" http://localhost:8000/upload
+```

@@ -7,10 +7,75 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="container">
-      <h1>InsideMotion</h1>
-      <p>AI rehab feedback for post-ACL recovery.</p>
-      <p class="hint">Edit <code>apps/frontend/index.html</code> to get started.</p>
+    <main class="page">
+      <header class="header">
+        <div class="brand">InsideMotion</div>
+        <nav class="nav">
+          <a href="#">Patients</a>
+          <a href="#">Sessions</a>
+          <a href="#">Insights</a>
+        </nav>
+        <div class="profile">Therapist</div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <h1>Therapist Dashboard</h1>
+          <p>
+            Upload a patient movement video to generate clinical insights and
+            track recovery.
+          </p>
+        </div>
+        <div class="status">
+          <span class="label">Clinic</span>
+          <span>BeaverTech Motion Recovery</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Upload Patient Video</h2>
+          <span class="meta">Supported: MP4, MOV, up to 200MB</span>
+        </div>
+        <div class="uploader">
+          <div class="dropzone" id="dropzone">
+            <div class="icon">⬆︎</div>
+            <div class="title">Drag & drop video here</div>
+            <div class="subtitle">or select a file from your computer</div>
+            <div class="file-name" id="fileName">No file selected</div>
+          </div>
+          <div class="actions">
+            <label class="file-input" for="videoInput">
+              <input id="videoInput" type="file" accept="video/*" />
+              <span>Select file</span>
+            </label>
+            <button class="primary" type="button" id="uploadButton" disabled>
+              Upload video
+            </button>
+          </div>
+          <div class="upload-status" id="uploadStatus">
+            Connect to the API and upload the selected file.
+          </div>
+        </div>
+      </section>
+
+      <section class="card muted">
+        <h3>Recent Activity</h3>
+        <div class="activity">
+          <div>
+            <div class="activity-title">Anya S. — Squat Assessment</div>
+            <div class="activity-meta">Uploaded 2 hours ago</div>
+          </div>
+          <div class="badge">Processing</div>
+        </div>
+        <div class="activity">
+          <div>
+            <div class="activity-title">Kai B. — Lunge Assessment</div>
+            <div class="activity-meta">Uploaded yesterday</div>
+          </div>
+          <div class="badge success">Completed</div>
+        </div>
+      </section>
     </main>
     <script src="./main.js"></script>
   </body>
