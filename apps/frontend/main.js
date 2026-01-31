@@ -7,11 +7,11 @@ const dropzone = document.getElementById("dropzone");
 const uploadStatus = document.getElementById("uploadStatus");
 
 const API_BASE_URL = "http://localhost:8000";
+let isUploading = false;
 
 const setSelectedFile = (file) => {
   if (!file) {
     fileName.textContent = "No file selected";
-    uploadButton.disabled = true;
     uploadStatus.textContent = "Connect to the API and upload the selected file.";
     uploadStatus.className = "upload-status";
     return;
@@ -19,14 +19,12 @@ const setSelectedFile = (file) => {
 
   if (!file.type.startsWith("video/")) {
     fileName.textContent = "Please select a video file";
-    uploadButton.disabled = true;
     uploadStatus.textContent = "Only video files are supported.";
     uploadStatus.className = "upload-status error";
     return;
   }
 
   fileName.textContent = `Selected: ${file.name}`;
-  uploadButton.disabled = false;
   uploadStatus.textContent = "Ready to upload.";
   uploadStatus.className = "upload-status";
 };
@@ -56,11 +54,17 @@ dropzone.addEventListener("drop", (event) => {
 });
 
 uploadButton.addEventListener("click", () => {
-  const [file] = videoInput.files;
-  if (!file) {
+  if (isUploading) {
     return;
   }
 
+  const [file] = videoInput.files;
+  if (!file) {
+    videoInput.click();
+    return;
+  }
+
+  isUploading = true;
   uploadButton.disabled = true;
   uploadButton.textContent = "Uploading...";
   uploadStatus.textContent = "Uploading to server...";
@@ -92,6 +96,7 @@ uploadButton.addEventListener("click", () => {
     })
     .finally(() => {
       uploadButton.textContent = "Upload video";
-      uploadButton.disabled = true;
+      uploadButton.disabled = false;
+      isUploading = false;
     });
 });

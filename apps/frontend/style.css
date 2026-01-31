@@ -102,6 +102,12 @@ a {
   gap: 1.25rem;
 }
 
+.helper {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
 .card.muted {
   background: #f9fafb;
 }
