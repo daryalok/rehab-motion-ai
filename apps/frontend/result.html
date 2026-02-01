@@ -42,28 +42,10 @@
               <video id="analysisVideo" controls>
                 Your browser does not support video.
               </video>
-              <canvas id="skeletonCanvas"></canvas>
             </div>
             <div class="video-meta">
               <div>Duration: <span id="videoDuration">--:--</span></div>
               <div>Captured: Today, 14:12</div>
-            </div>
-            <div class="skeleton-legend">
-              <div class="legend-title">Skeleton Color Coding:</div>
-              <div class="legend-items">
-                <span class="legend-item">
-                  <span class="legend-color green"></span>
-                  OK
-                </span>
-                <span class="legend-item">
-                  <span class="legend-color yellow"></span>
-                  Attention
-                </span>
-                <span class="legend-item">
-                  <span class="legend-color red"></span>
-                  Problem
-                </span>
-              </div>
             </div>
           </div>
           <div class="result-panel">
@@ -97,6 +79,24 @@
       <section class="card">
         <h2>Key Moments</h2>
         <p class="helper">Critical frames identified during squat analysis</p>
+        
+        <div class="skeleton-legend">
+          <div class="legend-title">Skeleton Color Coding:</div>
+          <div class="legend-items">
+            <span class="legend-item">
+              <span class="legend-color green"></span>
+              OK
+            </span>
+            <span class="legend-item">
+              <span class="legend-color yellow"></span>
+              Attention
+            </span>
+            <span class="legend-item">
+              <span class="legend-color red"></span>
+              Problem
+            </span>
+          </div>
+        </div>
         
         <div class="key-moments-grid" id="keyMomentsGrid">
           <!-- Key moments will be loaded here by JavaScript -->

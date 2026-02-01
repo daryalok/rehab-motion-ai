@@ -3,8 +3,9 @@ console.log("Analysis result UI loaded");
 const API_BASE_URL = "http://localhost:8000";
 
 const video = document.getElementById("analysisVideo");
-const canvas = document.getElementById("skeletonCanvas");
-const ctx = canvas.getContext("2d");
+// Canvas skeleton overlay removed - skeleton now on key moment images only
+// const canvas = document.getElementById("skeletonCanvas");
+// const ctx = canvas.getContext("2d");
 const durationEl = document.getElementById("videoDuration");
 
 // Load analysis data from sessionStorage
@@ -119,219 +120,17 @@ if (analysisData.saved_as) {
   video.src = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 }
 
-// Load keypoints from backend (real AI analysis)
-let keypointsData = [];
-
-// Load real keypoints if available
-if (analysisData.keypoints_file) {
-  console.log("Loading real keypoints:", analysisData.keypoints_file);
-  fetch(`${API_BASE_URL}/keypoints/${analysisData.keypoints_file}`)
-    .then(res => res.json())
-    .then(data => {
-      keypointsData = data;
-      console.log(`✓ Loaded ${keypointsData.length} keypoint frames from AI analysis`);
-    })
-    .catch(err => {
-      console.error("Failed to load keypoints, using mock data:", err);
-      keypointsData = generateMockKeypoints();
-    });
-} else {
-  console.warn("No keypoints file available, using mock data");
-  keypointsData = generateMockKeypoints();
-}
-
-function generateMockKeypoints() {
-  const data = [];
-  const fps = 30;
-  const duration = 24; // seconds
-  const totalFrames = fps * duration;
-  
-  for (let frame = 0; frame < totalFrames; frame++) {
-    const t = frame / totalFrames;
-    
-    // Simulate squat motion with compensation
-    const squatPhase = Math.sin(t * Math.PI * 6); // 6 reps
-    const compensation = 0.05 * Math.sin(t * Math.PI * 6); // shift to left
-    
-    data.push({
-      time: t * duration,
-      keypoints: [
-        // Head
-        { x: 0.5 + compensation, y: 0.15, name: "head" },
-        // Shoulders
-        { x: 0.45 + compensation, y: 0.25, name: "left_shoulder" },
-        { x: 0.55 + compensation, y: 0.25, name: "right_shoulder" },
-        // Hips (compensation visible here)
-        { x: 0.43 + compensation * 2, y: 0.5 + squatPhase * 0.1, name: "left_hip" },
-        { x: 0.57 + compensation * 0.5, y: 0.5 + squatPhase * 0.15, name: "right_hip" },
-        // Knees (asymmetry)
-        { x: 0.42 + compensation * 2, y: 0.65 + squatPhase * 0.15, name: "left_knee" },
-        { x: 0.58 + compensation * 0.5, y: 0.65 + squatPhase * 0.1, name: "right_knee" },
-        // Ankles
-        { x: 0.42 + compensation * 1.5, y: 0.85, name: "left_ankle" },
-        { x: 0.58 + compensation * 0.3, y: 0.85, name: "right_ankle" }
-      ]
-    });
-  }
-  
-  return data;
-}
-
-function resizeCanvas() {
-  const rect = video.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-}
-
-function drawSkeleton(keypoints) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  if (!keypoints || keypoints.length === 0) return;
-  
-  const w = canvas.width;
-  const h = canvas.height;
-  
-  // Convert normalized coordinates to canvas pixels
-  const points = {};
-  keypoints.forEach(kp => {
-    points[kp.name] = {
-      x: kp.x * w,
-      y: kp.y * h
-    };
-  });
-  
-  // Get compensation metrics from analysis data
-  const metrics = analysisData?.analysis?.metrics || {};
-  const hipShift = metrics.avg_hip_shift || 0;
-  const kneeAsymmetry = metrics.avg_knee_asymmetry || 0;
-  
-  // Determine color based on compensation severity
-  // Green: OK (< 0.01), Yellow: Attention (0.01-0.02), Red: Problem (> 0.02)
-  const getColorForMetric = (value) => {
-    if (value < 0.01) return "#10b981"; // Green - OK
-    if (value < 0.02) return "#f59e0b"; // Yellow - Attention
-    return "#ef4444"; // Red - Problem
-  };
-  
-  // Define color scheme for body parts
-  const leftSideColor = getColorForMetric(Math.max(hipShift, kneeAsymmetry));
-  const rightSideColor = "#10b981"; // Right side is healthy (green)
-  const centerColor = hipShift > 0.015 ? "#f59e0b" : "#10b981";
-  
-  // Draw skeleton connections with color coding
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  
-  const connections = [
-    // Head to shoulders (center - based on hip shift)
-    { from: "head", to: "left_shoulder", color: centerColor },
-    { from: "head", to: "right_shoulder", color: centerColor },
-    { from: "left_shoulder", to: "right_shoulder", color: centerColor },
-    
-    // Left side (compensating side - red/yellow)
-    { from: "left_shoulder", to: "left_hip", color: leftSideColor },
-    { from: "left_hip", to: "left_knee", color: leftSideColor },
-    { from: "left_knee", to: "left_ankle", color: leftSideColor },
-    
-    // Right side (healthy side - green)
-    { from: "right_shoulder", to: "right_hip", color: rightSideColor },
-    { from: "right_hip", to: "right_knee", color: rightSideColor },
-    { from: "right_knee", to: "right_ankle", color: rightSideColor },
-    
-    // Hip connection (based on hip shift)
-    { from: "left_hip", to: "right_hip", color: getColorForMetric(hipShift) }
-  ];
-  
-  connections.forEach(({ from, to, color }) => {
-    if (points[from] && points[to]) {
-      ctx.strokeStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(points[from].x, points[from].y);
-      ctx.lineTo(points[to].x, points[to].y);
-      ctx.stroke();
-    }
-  });
-  
-  // Draw keypoints with color coding
-  keypoints.forEach(kp => {
-    const px = kp.x * w;
-    const py = kp.y * h;
-    
-    // Determine point color based on body side
-    let pointColor;
-    if (kp.name.includes('left')) {
-      pointColor = leftSideColor;
-    } else if (kp.name.includes('right')) {
-      pointColor = rightSideColor;
-    } else {
-      pointColor = centerColor; // head
-    }
-    
-    ctx.fillStyle = pointColor;
-    ctx.beginPath();
-    ctx.arc(px, py, 5, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Highlight compensation (right knee - injured)
-    if (kp.name === "right_knee") {
-      ctx.strokeStyle = "#ff4444";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(px, py, 12, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  });
-  
-  // Draw angle indicator at 32° detection point
-  if (video.currentTime > 8 && video.currentTime < 12) {
-    ctx.fillStyle = "rgba(255, 68, 68, 0.9)";
-    ctx.font = "14px 'Inter', sans-serif";
-    ctx.fillText("⚠ Compensation at 32°", 20, 30);
-  }
-}
+// Canvas skeleton overlay removed - skeleton now visible only on key moment screenshots below
+// All skeleton rendering code removed (was drawSkeleton, resizeCanvas, generateMockKeypoints)
 
 video.addEventListener("loadedmetadata", () => {
   const mins = Math.floor(video.duration / 60);
   const secs = Math.floor(video.duration % 60);
   durationEl.textContent = `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  
-  resizeCanvas();
 });
 
-video.addEventListener("timeupdate", () => {
-  const currentTime = video.currentTime;
-  
-  if (!keypointsData || keypointsData.length === 0) {
-    return;
-  }
-  
-  // Find nearest keypoints frame
-  const frame = keypointsData.find(
-    (f, i) => {
-      const next = keypointsData[i + 1];
-      const frameTime = f.time || 0;
-      const nextTime = next ? (next.time || 0) : Infinity;
-      return currentTime >= frameTime && currentTime < nextTime;
-    }
-  );
-  
-  if (frame && frame.keypoints) {
-    drawSkeleton(frame.keypoints);
-  }
-});
-
-video.addEventListener("play", () => {
-  resizeCanvas();
-});
-
-video.addEventListener("pause", () => {
-  // Keep skeleton visible when paused
-});
-
-window.addEventListener("resize", resizeCanvas);
-
-// Initial render
-resizeCanvas();
+// All canvas/skeleton rendering event listeners removed
+// Skeleton is now only visible on key moment screenshots below the video
 
 // ========================================
 // Activity Tracker

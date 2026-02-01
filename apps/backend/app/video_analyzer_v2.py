@@ -142,7 +142,8 @@ class VideoAnalyzer:
         compensation_analysis = self._analyze_compensation(keypoints_data)
         
         # Extract key moments and save as images
-        key_moments = self._extract_key_moments(video_path, keypoints_data, fps)
+        metrics = compensation_analysis.get("metrics", {})
+        key_moments = self._extract_key_moments(video_path, keypoints_data, fps, metrics)
         
         return {
             "keypoints_data": keypoints_data,
@@ -238,9 +239,10 @@ class VideoAnalyzer:
             "message": "Insufficient data for analysis"
         }
     
-    def _extract_key_moments(self, video_path: Path, keypoints_data: List[Dict], fps: float) -> List[Dict]:
+    def _extract_key_moments(self, video_path: Path, keypoints_data: List[Dict], fps: float, metrics: Dict) -> List[Dict]:
         """Extract key moments from video and save as annotated images"""
         logger.info("Extracting key moments...")
+        logger.info(f"Metrics for color coding: {metrics}")
         
         if not keypoints_data:
             return []
@@ -270,8 +272,8 @@ class VideoAnalyzer:
             ret, frame = cap.read()
             
             if ret:
-                # Draw skeleton overlay
-                annotated_frame = self._draw_skeleton_on_frame(frame, closest_frame["keypoints"])
+                # Draw skeleton overlay with color coding
+                annotated_frame = self._draw_skeleton_on_frame(frame, closest_frame["keypoints"], metrics)
                 
                 # Save as PNG
                 output_filename = f"{video_path.stem}_{moment['type']}.png"
@@ -293,8 +295,8 @@ class VideoAnalyzer:
         
         return key_moments
     
-    def _draw_skeleton_on_frame(self, frame, keypoints) -> np.ndarray:
-        """Draw pose skeleton overlay on frame"""
+    def _draw_skeleton_on_frame(self, frame, keypoints, metrics: Dict = None) -> np.ndarray:
+        """Draw pose skeleton overlay on frame with color coding based on metrics"""
         annotated = frame.copy()
         h, w = frame.shape[:2]
         
@@ -303,35 +305,67 @@ class VideoAnalyzer:
         for kp in keypoints:
             points[kp["name"]] = (int(kp["x"] * w), int(kp["y"] * h))
         
+        # Determine colors based on compensation metrics
+        # Green: OK (< 0.01), Yellow: Attention (0.01-0.02), Red: Problem (> 0.02)
+        if metrics:
+            hip_shift = metrics.get("avg_hip_shift", 0)
+            knee_asymmetry = metrics.get("avg_knee_asymmetry", 0)
+            max_compensation = max(hip_shift, knee_asymmetry)
+            
+            # BGR format for OpenCV
+            if max_compensation > 0.02:
+                left_color = (68, 68, 255)  # Red - Problem
+            elif max_compensation > 0.01:
+                left_color = (11, 158, 245)  # Yellow - Attention
+            else:
+                left_color = (136, 255, 0)  # Green - OK
+            
+            right_color = (136, 255, 0)  # Right side always green (healthy)
+            center_color = (11, 158, 245) if hip_shift > 0.015 else (136, 255, 0)
+        else:
+            # Default colors if no metrics
+            left_color = (136, 255, 0)  # Green
+            right_color = (136, 255, 0)  # Green
+            center_color = (136, 255, 0)  # Green
+        
         # Draw center line (vertical through hips center)
         if "left_hip" in points and "right_hip" in points:
             hip_center_x = (points["left_hip"][0] + points["right_hip"][0]) // 2
             cv2.line(annotated, (hip_center_x, 0), (hip_center_x, h), (200, 200, 200), 2, cv2.LINE_AA)
         
-        # Draw skeleton connections
+        # Draw skeleton connections with color coding
         connections = [
-            ("left_shoulder", "left_hip", (0, 255, 136)),
-            ("right_shoulder", "right_hip", (0, 255, 136)),
-            ("left_hip", "right_hip", (0, 255, 136)),
-            ("left_hip", "left_knee", (0, 255, 136)),
-            ("right_hip", "right_knee", (255, 68, 68)),  # Right side in red (injured)
-            ("left_knee", "left_ankle", (0, 255, 136)),
-            ("right_knee", "right_ankle", (255, 68, 68))  # Right side in red
+            # Left side (compensating side)
+            ("left_shoulder", "left_hip", left_color),
+            ("left_hip", "left_knee", left_color),
+            ("left_knee", "left_ankle", left_color),
+            
+            # Right side (healthy side)
+            ("right_shoulder", "right_hip", right_color),
+            ("right_hip", "right_knee", right_color),
+            ("right_knee", "right_ankle", right_color),
+            
+            # Center connections
+            ("left_hip", "right_hip", center_color)
         ]
         
         for start, end, color in connections:
             if start in points and end in points:
                 cv2.line(annotated, points[start], points[end], color, 4, cv2.LINE_AA)
         
-        # Draw keypoints
+        # Draw keypoints with color coding
         for name, (x, y) in points.items():
-            if "right" in name:
-                # Right side (injured) in red
-                cv2.circle(annotated, (x, y), 8, (255, 68, 68), -1, cv2.LINE_AA)
+            if "left" in name:
+                # Left side with compensation color
+                cv2.circle(annotated, (x, y), 8, left_color, -1, cv2.LINE_AA)
+                cv2.circle(annotated, (x, y), 10, (255, 255, 255), 2, cv2.LINE_AA)
+            elif "right" in name:
+                # Right side (healthy) in green
+                cv2.circle(annotated, (x, y), 8, right_color, -1, cv2.LINE_AA)
                 cv2.circle(annotated, (x, y), 10, (255, 255, 255), 2, cv2.LINE_AA)
             else:
-                # Left side (healthy) in green
-                cv2.circle(annotated, (x, y), 8, (0, 255, 136), -1, cv2.LINE_AA)
+                # Center points (head, etc.)
+                cv2.circle(annotated, (x, y), 8, center_color, -1, cv2.LINE_AA)
                 cv2.circle(annotated, (x, y), 10, (255, 255, 255), 2, cv2.LINE_AA)
         
         # Add compensation indicator
