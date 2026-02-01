@@ -33,9 +33,21 @@ a {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
   font-size: 1.1rem;
   letter-spacing: 0.02em;
+}
+
+.logo {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.brand-name {
+  font-weight: 600;
 }
 
 .nav {
