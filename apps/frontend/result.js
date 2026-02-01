@@ -39,6 +39,18 @@ if (analysisData.analysis) {
       (metrics.avg_knee_asymmetry * 100).toFixed(1) + '%';
     document.getElementById('metricMaxAsymmetry').textContent = 
       (metrics.max_knee_asymmetry * 100).toFixed(1) + '%';
+    
+    // Determine and log compensation severity
+    const hipShift = metrics.avg_hip_shift || 0;
+    const kneeAsymmetry = metrics.avg_knee_asymmetry || 0;
+    const maxCompensation = Math.max(hipShift, kneeAsymmetry);
+    
+    let severity = 'OK';
+    if (maxCompensation > 0.02) severity = 'Problem';
+    else if (maxCompensation > 0.01) severity = 'Attention';
+    
+    console.log(`Compensation severity: ${severity} (hip: ${(hipShift * 100).toFixed(1)}%, knee: ${(kneeAsymmetry * 100).toFixed(1)}%)`);
+    console.log(`Color coding: Left side (compensating) will be ${severity === 'Problem' ? 'RED' : severity === 'Attention' ? 'YELLOW' : 'GREEN'}`);
   }
 }
 
@@ -188,39 +200,74 @@ function drawSkeleton(keypoints) {
     };
   });
   
-  // Draw skeleton connections
-  ctx.strokeStyle = "#00ff88";
+  // Get compensation metrics from analysis data
+  const metrics = analysisData?.analysis?.metrics || {};
+  const hipShift = metrics.avg_hip_shift || 0;
+  const kneeAsymmetry = metrics.avg_knee_asymmetry || 0;
+  
+  // Determine color based on compensation severity
+  // Green: OK (< 0.01), Yellow: Attention (0.01-0.02), Red: Problem (> 0.02)
+  const getColorForMetric = (value) => {
+    if (value < 0.01) return "#10b981"; // Green - OK
+    if (value < 0.02) return "#f59e0b"; // Yellow - Attention
+    return "#ef4444"; // Red - Problem
+  };
+  
+  // Define color scheme for body parts
+  const leftSideColor = getColorForMetric(Math.max(hipShift, kneeAsymmetry));
+  const rightSideColor = "#10b981"; // Right side is healthy (green)
+  const centerColor = hipShift > 0.015 ? "#f59e0b" : "#10b981";
+  
+  // Draw skeleton connections with color coding
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
   
   const connections = [
-    ["head", "left_shoulder"],
-    ["head", "right_shoulder"],
-    ["left_shoulder", "right_shoulder"],
-    ["left_shoulder", "left_hip"],
-    ["right_shoulder", "right_hip"],
-    ["left_hip", "right_hip"],
-    ["left_hip", "left_knee"],
-    ["right_hip", "right_knee"],
-    ["left_knee", "left_ankle"],
-    ["right_knee", "right_ankle"]
+    // Head to shoulders (center - based on hip shift)
+    { from: "head", to: "left_shoulder", color: centerColor },
+    { from: "head", to: "right_shoulder", color: centerColor },
+    { from: "left_shoulder", to: "right_shoulder", color: centerColor },
+    
+    // Left side (compensating side - red/yellow)
+    { from: "left_shoulder", to: "left_hip", color: leftSideColor },
+    { from: "left_hip", to: "left_knee", color: leftSideColor },
+    { from: "left_knee", to: "left_ankle", color: leftSideColor },
+    
+    // Right side (healthy side - green)
+    { from: "right_shoulder", to: "right_hip", color: rightSideColor },
+    { from: "right_hip", to: "right_knee", color: rightSideColor },
+    { from: "right_knee", to: "right_ankle", color: rightSideColor },
+    
+    // Hip connection (based on hip shift)
+    { from: "left_hip", to: "right_hip", color: getColorForMetric(hipShift) }
   ];
   
-  connections.forEach(([start, end]) => {
-    if (points[start] && points[end]) {
+  connections.forEach(({ from, to, color }) => {
+    if (points[from] && points[to]) {
+      ctx.strokeStyle = color;
       ctx.beginPath();
-      ctx.moveTo(points[start].x, points[start].y);
-      ctx.lineTo(points[end].x, points[end].y);
+      ctx.moveTo(points[from].x, points[from].y);
+      ctx.lineTo(points[to].x, points[to].y);
       ctx.stroke();
     }
   });
   
-  // Draw keypoints
+  // Draw keypoints with color coding
   keypoints.forEach(kp => {
     const px = kp.x * w;
     const py = kp.y * h;
     
-    ctx.fillStyle = "#00ff88";
+    // Determine point color based on body side
+    let pointColor;
+    if (kp.name.includes('left')) {
+      pointColor = leftSideColor;
+    } else if (kp.name.includes('right')) {
+      pointColor = rightSideColor;
+    } else {
+      pointColor = centerColor; // head
+    }
+    
+    ctx.fillStyle = pointColor;
     ctx.beginPath();
     ctx.arc(px, py, 5, 0, Math.PI * 2);
     ctx.fill();
