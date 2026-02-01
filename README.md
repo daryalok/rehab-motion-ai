@@ -97,28 +97,140 @@ Using only a **camera** and **AI-based motion analysis**, we:
 
 ### 🎨 Frontend
 ```
-React, Next.js, Tailwind
+HTML5, CSS3, Vanilla JavaScript
+Clean, clinical UI optimized for therapist workflow
 ```
 
 ### ⚙️ Backend
 ```
-Python, FastAPI
+FastAPI (Python 3.12)
+RESTful API with async video processing
 ```
 
-### 🤖 AI / CV
+### 🤖 AI / Computer Vision
 ```
-Pose Estimation, Biomechanical Feature Extraction
-```
-
-### 🧮 Logic
-```
-Rule-based + lightweight ML for compensation detection
+MediaPipe Pose Landmarker (Google)
+33 keypoint skeletal tracking at 30fps
+OpenCV for video processing and visualization
 ```
 
-### ☁️ Hosting
+### 🧮 Biomechanical Analysis
 ```
-Vercel / Railway
+Custom algorithms for:
+- Hip shift detection (lateral displacement)
+- Knee flexion asymmetry (depth comparison)
+- Compensating side identification
+- Color-coded skeleton overlay (red/yellow/green)
 ```
+
+### 📊 Data Flow
+```
+1. Patient uploads squat video
+2. MediaPipe extracts pose keypoints
+3. Frame-by-frame biomechanical analysis
+4. Key moment detection (neutral, compensation peak)
+5. Visual report with annotated screenshots
+```
+
+---
+
+## 🔬 How It Works (Technical Deep Dive)
+
+### 🎯 Detection Algorithm
+
+**Step 1: Pose Extraction**
+- MediaPipe Pose processes each video frame
+- Extracts 33 3D landmarks (hips, knees, ankles, shoulders, etc.)
+- Normalized coordinates (0-1 range)
+
+**Step 2: Compensation Metrics**
+
+```python
+# Hip Shift (lateral displacement)
+hip_shift = abs(left_hip.x - right_hip.x)
+avg_hip_shift > 0.015  # 1.5% threshold
+
+# Knee Asymmetry (flexion depth)
+left_knee_angle = calculate_angle(hip, knee, ankle)
+right_knee_angle = calculate_angle(hip, knee, ankle)
+asymmetry = abs(left - right) / max(left, right)
+asymmetry > 0.02  # 2% threshold
+```
+
+**Step 3: Compensating Side Logic**
+- Compare average knee flexion depth (left vs right)
+- Leg that stays **straighter** = compensating (avoiding load)
+- Leg that **bends more** = healthy (taking more load)
+
+**Step 4: Color Coding**
+- **Red skeleton** = Problem side (compensating leg)
+- **Yellow skeleton** = Attention (moderate asymmetry)
+- **Green skeleton** = OK (symmetrical movement)
+
+**Step 5: Key Moments**
+- Extract 2 annotated screenshots:
+  - Neutral stance
+  - Peak compensation moment
+- Draw skeleton overlay with color coding
+- Add visual indicators (arrows, text labels)
+
+### 🎨 Clinical Decision Support
+
+The system **does not** diagnose or replace clinical judgment.
+
+It **does** provide:
+- Quantified asymmetry metrics
+- Visual evidence of load avoidance
+- Longitudinal tracking (activity calendar)
+- Actionable feedback for therapist review
+
+---
+
+## 🚀 Demo Instructions
+
+### Prerequisites
+```bash
+python3 --version  # 3.10+
+pip install -r apps/backend/requirements.txt
+```
+
+### Run Backend
+```bash
+cd apps/backend
+python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Open Frontend
+```bash
+open apps/frontend/index.html
+# or serve via: python3 -m http.server 8080
+```
+
+### Test Upload
+1. Upload a squat video (patient performing 3-6 reps)
+2. Wait for analysis (~5-15 seconds)
+3. View results: compensation detection + key moments
+4. Check activity tracker (mark completed exercises)
+
+---
+
+## 📈 Business Model (Future)
+
+### Revenue Streams
+1. **B2B2C**: License to health insurers (AOK, TK, Barmer)
+2. **B2B**: Direct sales to rehab clinics
+3. **Per-analysis pricing**: €2-5 per video analysis
+
+### Unit Economics (Estimated)
+- Cost per analysis: ~€0.10 (compute)
+- Target price: €3
+- Gross margin: ~97%
+
+### Market Size
+- 50,000+ ACL reconstructions/year in Germany
+- Average 6 months rehab = 24 weeks
+- 2 videos/week = 48 analyses per patient
+- TAM: 2.4M analyses/year × €3 = €7.2M
 
 ---
 

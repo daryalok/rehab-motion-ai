@@ -9,6 +9,33 @@ const uploadStatus = document.getElementById("uploadStatus");
 const API_BASE_URL = "http://localhost:8000";
 let isUploading = false;
 
+// File validation
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/avi'];
+const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
+
+function validateFile(file) {
+  if (!file) {
+    return { valid: false, error: "No file selected" };
+  }
+  
+  if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    return { 
+      valid: false, 
+      error: `Invalid file type. Please upload MP4, MOV, or AVI video. You uploaded: ${file.type || 'unknown type'}` 
+    };
+  }
+  
+  if (file.size > MAX_FILE_SIZE) {
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    return { 
+      valid: false, 
+      error: `File is too large (${sizeMB}MB). Maximum size is 200MB.` 
+    };
+  }
+  
+  return { valid: true };
+}
+
 // Progress bar functions
 const updateProgress = (percent, statusText) => {
   const progressContainer = document.getElementById("progressContainer");
@@ -56,15 +83,18 @@ const setSelectedFile = (file) => {
     return;
   }
 
-  if (!file.type.startsWith("video/")) {
-    fileName.textContent = "Please select a video file";
-    uploadStatus.textContent = "Only video files are supported.";
+  // Validate file
+  const validation = validateFile(file);
+  if (!validation.valid) {
+    fileName.textContent = "Invalid file";
+    uploadStatus.textContent = `⚠️ ${validation.error}`;
     uploadStatus.className = "upload-status error";
     return;
   }
 
-  fileName.textContent = `Selected: ${file.name}`;
-  uploadStatus.textContent = "Ready to upload.";
+  const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+  fileName.textContent = `Selected: ${file.name} (${sizeMB}MB)`;
+  uploadStatus.textContent = "✓ File validated. Ready to upload.";
   uploadStatus.className = "upload-status";
 };
 
@@ -211,7 +241,20 @@ uploadButton.addEventListener("click", () => {
       console.error("Upload error:", error);
       clearInterval(uploadProgressInterval);
       hideProgress();
-      uploadStatus.textContent = `Upload error: ${error.message}`;
+      
+      // Better error messages for common issues
+      let errorMessage = error.message;
+      if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+        errorMessage = "⚠️ Backend server is not running. Please start the server and try again.";
+      } else if (error.message.includes("413")) {
+        errorMessage = "⚠️ File is too large. Please upload a video smaller than 100MB.";
+      } else if (error.message.includes("415")) {
+        errorMessage = "⚠️ Invalid file type. Please upload an MP4, AVI, or MOV video.";
+      } else {
+        errorMessage = `⚠️ ${error.message}`;
+      }
+      
+      uploadStatus.textContent = errorMessage;
       uploadStatus.className = "upload-status error";
     })
     .finally(() => {
