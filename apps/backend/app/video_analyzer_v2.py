@@ -292,14 +292,13 @@ class VideoAnalyzer:
         if not keypoints_data:
             return []
         
-        # Select 3 key timestamps
+        # Select 2 key timestamps
         duration = len(keypoints_data) * 2 / fps if fps > 0 else 0  # accounting for frame_skip=2
         
-        # Key moments: neutral (early), peak compensation (middle), recovery (late)
+        # Key moments: neutral (early), peak compensation (middle)
         key_times = [
             {"time": duration * 0.2, "label": "Neutral", "type": "neutral"},
-            {"time": duration * 0.5, "label": "Compensation peak", "type": "peak"},
-            {"time": duration * 0.8, "label": "Recovery phase", "type": "recovery"}
+            {"time": duration * 0.5, "label": "Compensation peak", "type": "peak"}
         ]
         
         key_moments = []
