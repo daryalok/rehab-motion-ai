@@ -182,31 +182,62 @@ class VideoAnalyzer:
             }
         
         hip_shifts = []
+        hip_shift_directions = []  # positive = shift right, negative = shift left
         knee_asymmetries = []
+        knee_depth_diffs = []  # positive = right knee lower (more flexed), negative = left knee lower
         
         for frame_data in keypoints_data:
             keypoints = {kp["name"]: kp for kp in frame_data["keypoints"]}
             
-            if not all(k in keypoints for k in ["left_hip", "right_hip", "left_knee", "right_knee"]):
+            if not all(k in keypoints for k in ["left_hip", "right_hip", "left_knee", "right_knee", "left_ankle", "right_ankle"]):
                 continue
             
+            # Hip shift analysis
             left_hip_x = keypoints["left_hip"]["x"]
             right_hip_x = keypoints["right_hip"]["x"]
             hip_center_x = (left_hip_x + right_hip_x) / 2
             
-            hip_shift = abs(hip_center_x - 0.5)
+            # Shift direction: positive = right, negative = left
+            hip_shift_direction = hip_center_x - 0.5
+            hip_shift = abs(hip_shift_direction)
             hip_shifts.append(hip_shift)
+            hip_shift_directions.append(hip_shift_direction)
             
+            # Knee asymmetry analysis
             left_knee_y = keypoints["left_knee"]["y"]
             right_knee_y = keypoints["right_knee"]["y"]
-            knee_asymmetry = abs(left_knee_y - right_knee_y)
+            left_ankle_y = keypoints["left_ankle"]["y"]
+            right_ankle_y = keypoints["right_ankle"]["y"]
+            
+            # Calculate knee flexion depth (knee closer to ankle = less flexed = compensation)
+            left_knee_flexion = abs(left_knee_y - left_ankle_y)
+            right_knee_flexion = abs(right_knee_y - right_ankle_y)
+            
+            # Positive = right knee more flexed (left compensating)
+            # Negative = left knee more flexed (right compensating)
+            knee_depth_diff = left_knee_flexion - right_knee_flexion
+            knee_asymmetry = abs(knee_depth_diff)
+            
             knee_asymmetries.append(knee_asymmetry)
+            knee_depth_diffs.append(knee_depth_diff)
         
         if hip_shifts and knee_asymmetries:
             avg_hip_shift = np.mean(hip_shifts)
             max_hip_shift = np.max(hip_shifts)
             avg_knee_asymmetry = np.mean(knee_asymmetries)
             max_knee_asymmetry = np.max(knee_asymmetries)
+            
+            # Determine compensation side based on average shifts
+            avg_hip_direction = np.mean(hip_shift_directions)
+            avg_knee_depth = np.mean(knee_depth_diffs)
+            
+            # Determine which side is compensating
+            # Positive knee_depth_diff = right knee more flexed = left side compensating
+            # Negative knee_depth_diff = left knee more flexed = right side compensating
+            compensating_side = "left" if avg_knee_depth > 0 else "right"
+            
+            # Shift direction: positive = body shifts right (loading right leg more)
+            shift_direction = "right" if avg_hip_direction > 0 else "left"
             
             HIP_SHIFT_THRESHOLD = 0.05
             KNEE_ASYMMETRY_THRESHOLD = 0.08
@@ -216,21 +247,29 @@ class VideoAnalyzer:
                 max_knee_asymmetry > KNEE_ASYMMETRY_THRESHOLD
             )
             
-            logger.info(f"Metrics - Hip shift: {avg_hip_shift:.3f} (max: {max_hip_shift:.3f}), "
-                       f"Knee asymmetry: {avg_knee_asymmetry:.3f} (max: {max_knee_asymmetry:.3f})")
+            logger.info(f"=== COMPENSATION ANALYSIS ===")
+            logger.info(f"Hip shift: {avg_hip_shift:.3f} (max: {max_hip_shift:.3f}), direction: {shift_direction}")
+            logger.info(f"Knee asymmetry: {avg_knee_asymmetry:.3f} (max: {max_knee_asymmetry:.3f})")
+            logger.info(f"Compensating side: {compensating_side.upper()}")
+            logger.info(f"Interpretation: {compensating_side.upper()} leg avoids loading (injured/weak side)")
+            
+            message = f"Load shifts away from {compensating_side} leg - {compensating_side} side compensation detected" if compensation_detected else "No significant compensation detected"
             
             return {
                 "compensation_detected": bool(compensation_detected),
                 "knee_flexion_angle": 32,
-                "message": "Load shifts to healthy leg at 32° knee flexion" if compensation_detected 
-                          else "No significant compensation detected",
-                "recommendation": "Focus on slow, symmetrical knee loading." if compensation_detected
+                "message": message,
+                "recommendation": f"Focus on loading {compensating_side} leg symmetrically during squats." if compensation_detected
                                  else "Continue current rehabilitation protocol.",
+                "compensating_side": compensating_side,
+                "shift_direction": shift_direction,
                 "metrics": {
                     "avg_hip_shift": float(avg_hip_shift),
                     "max_hip_shift": float(max_hip_shift),
                     "avg_knee_asymmetry": float(avg_knee_asymmetry),
-                    "max_knee_asymmetry": float(max_knee_asymmetry)
+                    "max_knee_asymmetry": float(max_knee_asymmetry),
+                    "compensating_side": compensating_side,
+                    "shift_direction": shift_direction
                 }
             }
         
@@ -311,16 +350,30 @@ class VideoAnalyzer:
             hip_shift = metrics.get("avg_hip_shift", 0)
             knee_asymmetry = metrics.get("avg_knee_asymmetry", 0)
             max_compensation = max(hip_shift, knee_asymmetry)
+            compensating_side = metrics.get("compensating_side", "left")
             
-            # BGR format for OpenCV
+            logger.info(f"Drawing skeleton - compensating side: {compensating_side}, max compensation: {max_compensation:.3f}")
+            
+            # Determine problem color based on severity (BGR format for OpenCV)
             if max_compensation > 0.02:
-                left_color = (68, 68, 255)  # Red - Problem
+                problem_color = (68, 68, 255)  # Red - Problem
             elif max_compensation > 0.01:
-                left_color = (11, 158, 245)  # Yellow - Attention
+                problem_color = (11, 158, 245)  # Yellow - Attention
             else:
-                left_color = (136, 255, 0)  # Green - OK
+                problem_color = (136, 255, 0)  # Green - OK
             
-            right_color = (136, 255, 0)  # Right side always green (healthy)
+            healthy_color = (136, 255, 0)  # Green - Healthy side
+            
+            # Assign colors based on which side is compensating
+            if compensating_side == "left":
+                left_color = problem_color  # Left avoids loading = problem
+                right_color = healthy_color  # Right is healthy
+                logger.info(f"Left side (compensating): problem color, Right side: green")
+            else:
+                left_color = healthy_color  # Left is healthy
+                right_color = problem_color  # Right avoids loading = problem
+                logger.info(f"Right side (compensating): problem color, Left side: green")
+            
             center_color = (11, 158, 245) if hip_shift > 0.015 else (136, 255, 0)
         else:
             # Default colors if no metrics
@@ -368,18 +421,41 @@ class VideoAnalyzer:
                 cv2.circle(annotated, (x, y), 8, center_color, -1, cv2.LINE_AA)
                 cv2.circle(annotated, (x, y), 10, (255, 255, 255), 2, cv2.LINE_AA)
         
-        # Add compensation indicator
-        if "left_hip" in points and "right_hip" in points:
+        # Add compensation indicator text
+        if metrics and "compensating_side" in metrics:
+            compensating_side = metrics.get("compensating_side", "")
+            max_compensation = max(hip_shift, knee_asymmetry)
+            
+            if max_compensation > 0.01:
+                # Draw semi-transparent background for text
+                text = f"{compensating_side.upper()} leg compensation"
+                text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+                cv2.rectangle(annotated, (20, 20), (text_size[0] + 40, 70), (0, 0, 0), -1)
+                cv2.rectangle(annotated, (20, 20), (text_size[0] + 40, 70), (255, 255, 255), 2)
+                
+                # Draw text
+                cv2.putText(annotated, text, (30, 55),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+        
+        # Add shift direction arrow if significant
+        if "left_hip" in points and "right_hip" in points and metrics:
             left_hip_x = points["left_hip"][0]
             right_hip_x = points["right_hip"][0]
             hip_center_x = (left_hip_x + right_hip_x) // 2
             
-            # If shifted significantly, draw arrow
             shift = abs(hip_center_x - w // 2)
             if shift > w * 0.05:
-                direction = "←" if hip_center_x < w // 2 else "→"
-                cv2.putText(annotated, f"Shift {direction}", (30, 50),
-                           cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 68, 68), 3, cv2.LINE_AA)
+                shift_direction = metrics.get("shift_direction", "")
+                arrow_y = h - 50
+                arrow_start_x = w // 2
+                arrow_end_x = arrow_start_x + (100 if shift_direction == "right" else -100)
+                
+                # Draw arrow showing shift direction
+                cv2.arrowedLine(annotated, (arrow_start_x, arrow_y), (arrow_end_x, arrow_y),
+                               (200, 200, 200), 3, cv2.LINE_AA, tipLength=0.3)
+                cv2.putText(annotated, f"Body shift {shift_direction}", 
+                           (w // 2 - 80, arrow_y - 15),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2, cv2.LINE_AA)
         
         return annotated
     
