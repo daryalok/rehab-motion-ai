@@ -823,3 +823,227 @@ a {
   font-size: 0.875rem;
   color: #6b7280;
 }
+
+/* Blog Article Styles */
+.blog-article {
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.75;
+}
+
+.article-header {
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.article-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.article-meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.article-content {
+  font-size: 1.0625rem;
+  color: #374151;
+}
+
+.article-content .lead {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: #1f2937;
+  margin-bottom: 2rem;
+}
+
+.article-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.article-content h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.article-content h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.article-content p {
+  margin-bottom: 1rem;
+}
+
+.article-content ul,
+.article-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.article-content li {
+  margin-bottom: 0.5rem;
+}
+
+.article-content strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.note {
+  font-style: italic;
+  color: #6b7280;
+  font-size: 0.9375rem;
+}
+
+/* Callout Boxes */
+.callout {
+  padding: 1.25rem 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid;
+}
+
+.callout h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.callout ul {
+  margin-bottom: 0;
+}
+
+.callout-info {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.callout-warning {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.callout-danger {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+/* Phase Sections */
+.phase-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.phase-title {
+  color: #10b981;
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.exercise-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.exercise-item strong {
+  display: block;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.exercise-item ul {
+  margin-bottom: 0;
+}
+
+/* Weekly Schedule */
+.weekly-schedule {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.schedule-day {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.day-header {
+  background: #10b981;
+  color: white;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.schedule-day ul {
+  padding: 1rem 1rem 1rem 2rem;
+  margin: 0;
+}
+
+.schedule-day li {
+  font-size: 0.9375rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Article Footer */
+.article-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e5e7eb;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Active Navigation Link */
+.nav a.active {
+  color: #10b981;
+  font-weight: 600;
+}
