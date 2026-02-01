@@ -209,12 +209,13 @@ class VideoAnalyzer:
             left_ankle_y = keypoints["left_ankle"]["y"]
             right_ankle_y = keypoints["right_ankle"]["y"]
             
-            # Calculate knee flexion depth (knee closer to ankle = less flexed = compensation)
+            # Calculate knee flexion depth (larger value = more flexed = healthy)
+            # Distance from knee to ankle: larger = knee further from ankle = more bent
             left_knee_flexion = abs(left_knee_y - left_ankle_y)
             right_knee_flexion = abs(right_knee_y - right_ankle_y)
             
-            # Positive = right knee more flexed (left compensating)
-            # Negative = left knee more flexed (right compensating)
+            # Positive = LEFT knee more flexed → LEFT healthy, RIGHT compensating
+            # Negative = RIGHT knee more flexed → RIGHT healthy, LEFT compensating
             knee_depth_diff = left_knee_flexion - right_knee_flexion
             knee_asymmetry = abs(knee_depth_diff)
             
@@ -231,10 +232,10 @@ class VideoAnalyzer:
             avg_hip_direction = np.mean(hip_shift_directions)
             avg_knee_depth = np.mean(knee_depth_diffs)
             
-            # Determine which side is compensating
-            # Positive knee_depth_diff = right knee more flexed = left side compensating
-            # Negative knee_depth_diff = left knee more flexed = right side compensating
-            compensating_side = "left" if avg_knee_depth > 0 else "right"
+            # Determine which side is compensating (avoids loading = stays straighter)
+            # Positive avg_knee_depth = LEFT knee more flexed → LEFT healthy, RIGHT compensating
+            # Negative avg_knee_depth = RIGHT knee more flexed → RIGHT healthy, LEFT compensating
+            compensating_side = "right" if avg_knee_depth > 0 else "left"
             
             # Shift direction: positive = body shifts right (loading right leg more)
             shift_direction = "right" if avg_hip_direction > 0 else "left"
@@ -250,8 +251,13 @@ class VideoAnalyzer:
             logger.info(f"=== COMPENSATION ANALYSIS ===")
             logger.info(f"Hip shift: {avg_hip_shift:.3f} (max: {max_hip_shift:.3f}), direction: {shift_direction}")
             logger.info(f"Knee asymmetry: {avg_knee_asymmetry:.3f} (max: {max_knee_asymmetry:.3f})")
+            logger.info(f"Knee depth diff: {avg_knee_depth:.3f} (positive = left more flexed)")
             logger.info(f"Compensating side: {compensating_side.upper()}")
-            logger.info(f"Interpretation: {compensating_side.upper()} leg avoids loading (injured/weak side)")
+            logger.info(f"Interpretation: {compensating_side.upper()} leg stays straighter = avoids loading (injured/weak)")
+            
+            # Determine healthy side for clarity
+            healthy_side = "left" if compensating_side == "right" else "right"
+            logger.info(f"Healthy side: {healthy_side.upper()} leg bends more = takes more load")
             
             message = f"Load shifts away from {compensating_side} leg - {compensating_side} side compensation detected" if compensation_detected else "No significant compensation detected"
             
