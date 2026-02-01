@@ -290,6 +290,106 @@ resizeCanvas();
 // Activity Tracker
 // ========================================
 
+// LocalStorage key for activity data
+const ACTIVITY_STORAGE_KEY = 'rehab_activity_data';
+
+// Get stored activity data or generate mock data
+function getActivityData() {
+  const stored = localStorage.getItem(ACTIVITY_STORAGE_KEY);
+  
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      console.log("Loaded activity data from localStorage:", parsed);
+      return parsed;
+    } catch (e) {
+      console.error("Error parsing stored activity data:", e);
+    }
+  }
+  
+  // Generate mock data for first-time users
+  console.log("Generating initial mock activity data");
+  const mockData = {};
+  const today = new Date();
+  
+  for (let i = 29; i >= 1; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateKey = date.toISOString().split('T')[0];
+    
+    // Mock data: random completion with ~70% completion rate
+    mockData[dateKey] = Math.random() < 0.7;
+  }
+  
+  // Today starts as incomplete
+  const todayKey = today.toISOString().split('T')[0];
+  mockData[todayKey] = false;
+  
+  localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(mockData));
+  return mockData;
+}
+
+// Save activity data
+function saveActivityData(data) {
+  localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(data));
+  console.log("Activity data saved to localStorage");
+}
+
+// Mark today as completed
+function markTodayCompleted() {
+  const today = new Date();
+  const todayKey = today.toISOString().split('T')[0];
+  
+  const activityData = getActivityData();
+  activityData[todayKey] = true;
+  saveActivityData(activityData);
+  
+  console.log(`✓ Marked ${todayKey} as completed`);
+  
+  // Regenerate tracker
+  generateActivityTracker();
+  
+  // Update button state
+  updateMarkCompleteButton();
+  
+  // Show success feedback
+  showCompletionFeedback();
+}
+
+// Update button state based on today's completion
+function updateMarkCompleteButton() {
+  const btn = document.getElementById('markCompleteBtn');
+  if (!btn) return;
+  
+  const today = new Date();
+  const todayKey = today.toISOString().split('T')[0];
+  const activityData = getActivityData();
+  
+  if (activityData[todayKey]) {
+    btn.textContent = '✓ Completed today';
+    btn.classList.add('completed');
+    btn.disabled = false;
+  } else {
+    btn.textContent = '✓ Mark today as completed';
+    btn.classList.remove('completed');
+    btn.disabled = false;
+  }
+}
+
+// Show success feedback
+function showCompletionFeedback() {
+  const btn = document.getElementById('markCompleteBtn');
+  if (!btn) return;
+  
+  const originalText = btn.textContent;
+  btn.textContent = '✓ Great job!';
+  btn.style.background = '#059669';
+  
+  setTimeout(() => {
+    btn.textContent = '✓ Completed today';
+  }, 2000);
+}
+
 function generateActivityTracker() {
   console.log("=== GENERATING ACTIVITY TRACKER ===");
   
@@ -299,21 +399,19 @@ function generateActivityTracker() {
     return;
   }
   
-  // Generate mock data for last 30 days
+  // Get activity data from localStorage
+  const storedData = getActivityData();
   const today = new Date();
   const activityData = [];
   
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    
-    // Mock data: random completion with ~70% completion rate
-    // Higher probability of completion in recent days
-    const isCompleted = i === 0 ? true : Math.random() < (0.6 + (30 - i) * 0.01);
+    const dateKey = date.toISOString().split('T')[0];
     
     activityData.push({
       date: date,
-      completed: isCompleted,
+      completed: storedData[dateKey] || false,
       isToday: i === 0
     });
   }
@@ -382,3 +480,15 @@ function generateActivityTracker() {
 
 // Generate tracker on page load
 generateActivityTracker();
+
+// Update button state on page load
+updateMarkCompleteButton();
+
+// Add click handler for mark complete button
+const markCompleteBtn = document.getElementById('markCompleteBtn');
+if (markCompleteBtn) {
+  markCompleteBtn.addEventListener('click', () => {
+    console.log("Mark complete button clicked");
+    markTodayCompleted();
+  });
+}

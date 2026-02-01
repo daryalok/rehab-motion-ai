@@ -143,6 +143,45 @@ a {
   font-size: 0.85rem;
 }
 
+.mark-complete-btn {
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mark-complete-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mark-complete-btn:active {
+  transform: translateY(0);
+}
+
+.mark-complete-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mark-complete-btn.completed {
+  background: #6b7280;
+}
+
+.mark-complete-btn.completed:hover {
+  background: #4b5563;
+}
+
 .uploader {
   display: flex;
   flex-direction: column;
