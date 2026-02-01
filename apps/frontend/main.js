@@ -9,6 +9,45 @@ const uploadStatus = document.getElementById("uploadStatus");
 const API_BASE_URL = "http://localhost:8000";
 let isUploading = false;
 
+// Progress bar functions
+const updateProgress = (percent, statusText) => {
+  const progressContainer = document.getElementById("progressContainer");
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+  const uploadStatus = document.getElementById("uploadStatus");
+  
+  progressContainer.style.display = "flex";
+  progressFill.style.width = `${percent}%`;
+  progressText.textContent = `${Math.round(percent)}%`;
+  
+  if (statusText) {
+    uploadStatus.textContent = statusText;
+  }
+};
+
+const hideProgress = () => {
+  const progressContainer = document.getElementById("progressContainer");
+  progressContainer.style.display = "none";
+};
+
+const simulateAnalysisProgress = (startPercent, endPercent, durationMs) => {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const currentPercent = startPercent + (endPercent - startPercent) * progress;
+      
+      updateProgress(currentPercent, "Analyzing video with AI...");
+      
+      if (progress >= 1) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 100);
+  });
+};
+
 const setSelectedFile = (file) => {
   if (!file) {
     fileName.textContent = "No file selected";
@@ -82,16 +121,34 @@ uploadButton.addEventListener("click", () => {
   uploadStatus.textContent = "Uploading to server...";
   uploadStatus.className = "upload-status";
 
+  // Reset and show initial progress
+  hideProgress();
+  setTimeout(() => updateProgress(0, "Uploading to server..."), 10);
+
   const formData = new FormData();
   formData.append("file", file);
   
   console.log("FormData created, sending to:", `${API_BASE_URL}/upload`);
+
+  // Simulate upload progress
+  const uploadProgressInterval = setInterval(() => {
+    const currentWidth = parseFloat(document.getElementById("progressFill").style.width) || 0;
+    if (currentWidth < 30) {
+      updateProgress(currentWidth + 3, "Uploading to server...");
+    }
+  }, 200);
 
   fetch(`${API_BASE_URL}/upload`, {
     method: "POST",
     body: formData,
   })
     .then(async (response) => {
+      clearInterval(uploadProgressInterval);
+      updateProgress(30, "Upload complete, starting analysis...");
+      
+      // Start analysis progress simulation
+      simulateAnalysisProgress(30, 90, 3000);
+      
       console.log("Response received:", response.status, response.statusText);
       
       if (!response.ok) {
@@ -103,6 +160,9 @@ uploadButton.addEventListener("click", () => {
     })
     .then((data) => {
       console.log("✓ Upload successful, response data:", data);
+      
+      // Complete progress to 100%
+      updateProgress(100, "✓ Analysis complete!");
       
       uploadStatus.textContent = `✓ Uploaded and analyzed: ${data.filename}`;
       uploadStatus.className = "upload-status success";
@@ -149,6 +209,8 @@ uploadButton.addEventListener("click", () => {
     })
     .catch((error) => {
       console.error("Upload error:", error);
+      clearInterval(uploadProgressInterval);
+      hideProgress();
       uploadStatus.textContent = `Upload error: ${error.message}`;
       uploadStatus.className = "upload-status error";
     })
