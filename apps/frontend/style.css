@@ -1046,6 +1046,18 @@ a {
 .nav a.active {
   color: #10b981;
   font-weight: 600;
+  position: relative;
+}
+
+.nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #10b981;
+  border-radius: 2px;
 }
 
 /* Blog Index Grid */
