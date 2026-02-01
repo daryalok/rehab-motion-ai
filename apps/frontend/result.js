@@ -52,37 +52,7 @@ if (analysisData.analysis) {
     
     console.log(`Compensation severity: ${severity} (hip: ${(hipShift * 100).toFixed(1)}%, knee: ${(kneeAsymmetry * 100).toFixed(1)}%)`);
     console.log(`Color coding: Left side (compensating) will be ${severity === 'Problem' ? 'RED' : severity === 'Attention' ? 'YELLOW' : 'GREEN'}`);
-    
-    // Update movement analysis text based on compensation
-    updateMovementAnalysisText(analysisData.analysis);
   }
-}
-
-// Update the movement analysis description text
-function updateMovementAnalysisText(analysisData) {
-  const textElement = document.getElementById('movementAnalysisText');
-  const descriptionBox = document.getElementById('keyMomentsDescription');
-  
-  if (!textElement || !descriptionBox) return;
-  
-  const compensationDetected = analysisData.compensation_detected;
-  const compensatingSide = analysisData.metrics?.compensating_side || 'left';
-  
-  if (compensationDetected) {
-    // Show warning message if compensation detected
-    textElement.textContent = `Movement looks correct, but load shifts away from the ${compensatingSide} knee.`;
-    descriptionBox.style.background = '#fef3c7';
-    descriptionBox.style.borderColor = '#f59e0b';
-    textElement.style.color = '#92400e';
-  } else {
-    // Show praise if exercise performed correctly
-    textElement.textContent = '✓ Excellent! Movement is symmetrical with good knee loading. Keep up the great work!';
-    descriptionBox.style.background = '#f0fdf4';
-    descriptionBox.style.borderColor = '#86efac';
-    textElement.style.color = '#166534';
-  }
-  
-  console.log(`Movement analysis text updated: compensation=${compensationDetected}`);
 }
 
 // Load and display key moments

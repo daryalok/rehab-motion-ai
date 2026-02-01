@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import shutil
 from datetime import datetime
@@ -33,6 +34,59 @@ logger.info(f"Upload directory: {UPLOAD_DIR.absolute()}")
 # Initialize video analyzer
 video_analyzer = VideoAnalyzer()
 logger.info("VideoAnalyzer initialized")
+
+# Frontend static files
+FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+logger.info(f"Frontend directory: {FRONTEND_DIR.absolute()}")
+
+# Mount static files (CSS, JS, images)
+app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+
+
+# Serve frontend HTML pages
+@app.get("/", response_class=HTMLResponse)
+def serve_index():
+    """Serve the main upload page"""
+    index_path = FRONTEND_DIR / "index.html"
+    if not index_path.exists():
+        raise HTTPException(status_code=404, detail="Frontend not found")
+    return FileResponse(index_path)
+
+
+@app.get("/result.html", response_class=HTMLResponse)
+def serve_result():
+    """Serve the result page"""
+    result_path = FRONTEND_DIR / "result.html"
+    if not result_path.exists():
+        raise HTTPException(status_code=404, detail="Result page not found")
+    return FileResponse(result_path)
+
+
+@app.get("/blog.html", response_class=HTMLResponse)
+def serve_blog():
+    """Serve the blog index page"""
+    blog_path = FRONTEND_DIR / "blog.html"
+    if not blog_path.exists():
+        raise HTTPException(status_code=404, detail="Blog page not found")
+    return FileResponse(blog_path)
+
+
+@app.get("/blog-acl.html", response_class=HTMLResponse)
+def serve_blog_acl():
+    """Serve the ACL blog article"""
+    blog_acl_path = FRONTEND_DIR / "blog-acl.html"
+    if not blog_acl_path.exists():
+        raise HTTPException(status_code=404, detail="Blog article not found")
+    return FileResponse(blog_acl_path)
+
+
+@app.get("/blog-stoic.html", response_class=HTMLResponse)
+def serve_blog_stoic():
+    """Serve the Stoic blog article"""
+    blog_stoic_path = FRONTEND_DIR / "blog-stoic.html"
+    if not blog_stoic_path.exists():
+        raise HTTPException(status_code=404, detail="Blog article not found")
+    return FileResponse(blog_stoic_path)
 
 
 @app.get("/health")

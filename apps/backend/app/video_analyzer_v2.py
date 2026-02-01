@@ -240,22 +240,18 @@ class VideoAnalyzer:
             # Shift direction: positive = body shifts right (loading right leg more)
             shift_direction = "right" if avg_hip_direction > 0 else "left"
             
-            # Lower thresholds for better sensitivity to compensation patterns
-            # Clinical significance: even 1-2% asymmetry indicates compensation
-            HIP_SHIFT_THRESHOLD = 0.015  # 1.5% - sensitive to hip shift
-            KNEE_ASYMMETRY_THRESHOLD = 0.02  # 2% - sensitive to knee asymmetry
+            HIP_SHIFT_THRESHOLD = 0.05
+            KNEE_ASYMMETRY_THRESHOLD = 0.08
             
             compensation_detected = (
-                avg_hip_shift > HIP_SHIFT_THRESHOLD or 
-                avg_knee_asymmetry > KNEE_ASYMMETRY_THRESHOLD
+                max_hip_shift > HIP_SHIFT_THRESHOLD or 
+                max_knee_asymmetry > KNEE_ASYMMETRY_THRESHOLD
             )
             
             logger.info(f"=== COMPENSATION ANALYSIS ===")
             logger.info(f"Hip shift: {avg_hip_shift:.3f} (max: {max_hip_shift:.3f}), direction: {shift_direction}")
             logger.info(f"Knee asymmetry: {avg_knee_asymmetry:.3f} (max: {max_knee_asymmetry:.3f})")
             logger.info(f"Knee depth diff: {avg_knee_depth:.3f} (positive = left more flexed)")
-            logger.info(f"Thresholds: hip={HIP_SHIFT_THRESHOLD:.3f}, knee={KNEE_ASYMMETRY_THRESHOLD:.3f}")
-            logger.info(f"Compensation detected: {compensation_detected}")
             logger.info(f"Compensating side: {compensating_side.upper()}")
             logger.info(f"Interpretation: {compensating_side.upper()} leg stays straighter = avoids loading (injured/weak)")
             
