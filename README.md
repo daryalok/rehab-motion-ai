@@ -10,29 +10,62 @@ We help physiotherapists see invisible ACL compensations during home rehabilitat
 
 ## 🚀 Quick Start
 
-**Run locally in 30 seconds:**
+### Option 1: Using Make (Recommended)
 
 ```bash
-./start.sh
+make run
 ```
 
-Then open in your browser: **http://localhost:8000**
+Then open: **http://localhost:8000**
 
-**Requirements:**
-- Python 3.10+
-- ~500MB disk space (for dependencies + AI models)
+### Option 2: Using Docker
 
-**What happens:**
-1. ✅ Creates Python virtual environment
-2. ✅ Installs dependencies (FastAPI, MediaPipe, OpenCV)
-3. ✅ Downloads AI model (~10MB)
-4. ✅ Starts server on port 8000
-5. ✅ Serves frontend + backend on same URL
+```bash
+docker-compose up --build
+```
 
-**Usage:**
-- Upload a patient squat video (MP4, MOV, AVI)
-- Wait ~5-15 seconds for AI analysis
-- View results with compensation detection + key moments
+Then open: **http://localhost:8000**
+
+### Option 3: Manual Setup
+
+```bash
+cd apps/backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Available Make Commands
+
+```bash
+make help       # Show all available commands
+make install    # Install dependencies
+make dev        # Start development server
+make run        # Install + run (one command)
+make test       # Run tests
+make clean      # Clean build artifacts
+```
+
+### Docker Commands
+
+```bash
+docker-compose up           # Start services
+docker-compose up -d        # Start in background
+docker-compose down         # Stop services
+docker-compose logs -f      # View logs
+```
+
+### Requirements
+- **Python:** 3.10+ (local run)
+- **Docker:** 20.10+ (Docker run)
+- **Disk:** ~500MB (dependencies + AI models)
+- **RAM:** 2GB minimum
+
+### Usage
+1. Upload patient squat video (MP4, MOV, AVI)
+2. Wait ~5-15 seconds for AI analysis
+3. View results with compensation detection + key moments
 
 ---
 
