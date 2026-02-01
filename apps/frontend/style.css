@@ -610,3 +610,129 @@ a {
   font-weight: 700;
   color: #111827;
 }
+
+/* Activity Tracker */
+.activity-tracker {
+  padding: 1rem 0;
+}
+
+.activity-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid #e5e7eb;
+}
+
+.legend-dot.completed {
+  background: #10b981;
+  border-color: #059669;
+}
+
+.legend-dot.missed {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.legend-dot.today {
+  background: #3b82f6;
+  border-color: #2563eb;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.activity-day {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.activity-day:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.activity-day.completed {
+  background: #10b981;
+  border-color: #059669;
+}
+
+.activity-day.missed {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.activity-day.today {
+  background: #3b82f6;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.activity-day-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  margin-bottom: 4px;
+}
+
+.activity-day:hover .activity-day-tooltip {
+  opacity: 1;
+}
+
+.activity-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.875rem;
+  color: #6b7280;
+}

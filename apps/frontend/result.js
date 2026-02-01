@@ -285,3 +285,100 @@ window.addEventListener("resize", resizeCanvas);
 
 // Initial render
 resizeCanvas();
+
+// ========================================
+// Activity Tracker
+// ========================================
+
+function generateActivityTracker() {
+  console.log("=== GENERATING ACTIVITY TRACKER ===");
+  
+  const activityGrid = document.getElementById("activityGrid");
+  if (!activityGrid) {
+    console.error("Activity grid element not found");
+    return;
+  }
+  
+  // Generate mock data for last 30 days
+  const today = new Date();
+  const activityData = [];
+  
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    
+    // Mock data: random completion with ~70% completion rate
+    // Higher probability of completion in recent days
+    const isCompleted = i === 0 ? true : Math.random() < (0.6 + (30 - i) * 0.01);
+    
+    activityData.push({
+      date: date,
+      completed: isCompleted,
+      isToday: i === 0
+    });
+  }
+  
+  // Render activity days
+  activityGrid.innerHTML = '';
+  
+  activityData.forEach((day) => {
+    const dayElement = document.createElement('div');
+    dayElement.className = 'activity-day';
+    
+    if (day.isToday) {
+      dayElement.classList.add('today');
+    } else if (day.completed) {
+      dayElement.classList.add('completed');
+    } else {
+      dayElement.classList.add('missed');
+    }
+    
+    // Tooltip
+    const tooltip = document.createElement('div');
+    tooltip.className = 'activity-day-tooltip';
+    const dateStr = day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    tooltip.textContent = `${dateStr}: ${day.isToday ? 'Today' : day.completed ? 'Completed' : 'Missed'}`;
+    
+    dayElement.appendChild(tooltip);
+    activityGrid.appendChild(dayElement);
+  });
+  
+  // Calculate stats
+  let currentStreak = 0;
+  let longestStreak = 0;
+  let tempStreak = 0;
+  let completedDays = 0;
+  
+  // Calculate current streak (from today backwards)
+  for (let i = activityData.length - 1; i >= 0; i--) {
+    if (activityData[i].completed) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+  
+  // Calculate longest streak and completion rate
+  activityData.forEach((day) => {
+    if (day.completed) {
+      completedDays++;
+      tempStreak++;
+      longestStreak = Math.max(longestStreak, tempStreak);
+    } else {
+      tempStreak = 0;
+    }
+  });
+  
+  const completionRate = Math.round((completedDays / activityData.length) * 100);
+  
+  // Update stats display
+  document.getElementById('currentStreak').textContent = currentStreak;
+  document.getElementById('longestStreak').textContent = longestStreak;
+  document.getElementById('completionRate').textContent = `${completionRate}%`;
+  
+  console.log(`✓ Activity tracker generated`);
+  console.log(`Current streak: ${currentStreak}, Longest: ${longestStreak}, Rate: ${completionRate}%`);
+}
+
+// Generate tracker on page load
+generateActivityTracker();
