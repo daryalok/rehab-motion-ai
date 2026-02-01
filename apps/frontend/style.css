@@ -41,15 +41,15 @@ a {
   letter-spacing: 0.02em;
 }
 
-.logo {
-  font-size: 1.8rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
+.logo-image {
+  height: 50px;
+  width: auto;
+  display: block;
+  transition: transform 0.2s ease;
 }
 
-.brand-name {
-  font-weight: 600;
+.logo-image:hover {
+  transform: scale(1.05);
 }
 
 .nav {
