@@ -793,6 +793,14 @@ a {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+/* Today AND completed - green with strong border */
+.activity-day.today.completed {
+  background: #10b981;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+  transform: scale(1.1);
+}
+
 .activity-day-tooltip {
   position: absolute;
   bottom: 100%;

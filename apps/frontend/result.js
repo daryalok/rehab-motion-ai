@@ -186,10 +186,16 @@ function markTodayCompleted() {
   const today = new Date();
   const todayKey = today.toISOString().split('T')[0];
   
+  console.log(`=== MARKING TODAY AS COMPLETED ===`);
+  console.log(`Today key: ${todayKey}`);
+  
   const activityData = getActivityData();
+  console.log(`Activity data before:`, activityData[todayKey]);
+  
   activityData[todayKey] = true;
   saveActivityData(activityData);
   
+  console.log(`Activity data after:`, activityData[todayKey]);
   console.log(`✓ Marked ${todayKey} as completed`);
   
   // Regenerate tracker
@@ -247,19 +253,27 @@ function generateActivityTracker() {
   
   // Get activity data from localStorage
   const storedData = getActivityData();
+  console.log("Loaded activity data:", storedData);
   const today = new Date();
+  const todayKey = today.toISOString().split('T')[0];
   const activityData = [];
   
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     const dateKey = date.toISOString().split('T')[0];
+    const isToday = i === 0;
+    const completed = storedData[dateKey] || false;
     
     activityData.push({
       date: date,
-      completed: storedData[dateKey] || false,
-      isToday: i === 0
+      completed: completed,
+      isToday: isToday
     });
+    
+    if (isToday) {
+      console.log(`Today (${dateKey}): completed=${completed}, stored value=${storedData[dateKey]}`);
+    }
   }
   
   // Render activity days
@@ -269,11 +283,19 @@ function generateActivityTracker() {
     const dayElement = document.createElement('div');
     dayElement.className = 'activity-day';
     
-    if (day.isToday) {
+    // Apply classes based on day status
+    if (day.isToday && day.completed) {
+      // Today AND completed - show both
+      dayElement.classList.add('today');
+      dayElement.classList.add('completed');
+    } else if (day.isToday) {
+      // Today but not completed yet
       dayElement.classList.add('today');
     } else if (day.completed) {
+      // Past day completed
       dayElement.classList.add('completed');
     } else {
+      // Past day missed
       dayElement.classList.add('missed');
     }
     
@@ -281,7 +303,7 @@ function generateActivityTracker() {
     const tooltip = document.createElement('div');
     tooltip.className = 'activity-day-tooltip';
     const dateStr = day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    tooltip.textContent = `${dateStr}: ${day.isToday ? 'Today' : day.completed ? 'Completed' : 'Missed'}`;
+    tooltip.textContent = `${dateStr}: ${day.isToday && day.completed ? 'Today (Completed)' : day.isToday ? 'Today' : day.completed ? 'Completed' : 'Missed'}`;
     
     dayElement.appendChild(tooltip);
     activityGrid.appendChild(dayElement);
@@ -298,9 +320,12 @@ function generateActivityTracker() {
     if (activityData[i].completed) {
       currentStreak++;
     } else {
+      // Stop counting streak if we hit a missed day
       break;
     }
   }
+  
+  console.log(`Current streak calculation: checked ${activityData.length} days, streak = ${currentStreak}`);
   
   // Calculate longest streak and completion rate
   activityData.forEach((day) => {
