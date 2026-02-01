@@ -8,6 +8,41 @@ We help physiotherapists see invisible ACL compensations during home rehabilitat
 
 ---
 
+## 🚀 Quick Start (Run Locally)
+
+**One-command startup:**
+```bash
+./start.sh
+```
+
+This will:
+1. ✅ Create virtual environment
+2. ✅ Install Python dependencies
+3. ✅ Download AI models
+4. ✅ Start backend server (port 8000)
+5. ✅ Open frontend in your browser
+
+**Or start components separately:**
+```bash
+# Terminal 1: Backend
+./start_backend.sh
+
+# Terminal 2: Frontend
+./start_frontend.sh
+```
+
+**Requirements:**
+- Python 3.10+
+- macOS, Linux, or Windows (with Git Bash)
+- 500MB free disk space (for AI models)
+
+**Troubleshooting:**
+- If scripts don't run: `chmod +x *.sh`
+- If port 8000 busy: `lsof -ti:8000 | xargs kill -9`
+- Full docs: See [Demo Instructions](#-demo-instructions) below
+
+---
+
 ## 🩺 Problem
 
 In Germany, post-ACL rehabilitation is **structurally limited**.
