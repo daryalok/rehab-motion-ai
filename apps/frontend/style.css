@@ -1060,6 +1060,32 @@ a {
   border-radius: 2px;
 }
 
+/* Disabled/Coming Soon Links */
+.nav a[href="#"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.nav a[href="#"]:hover {
+  color: #6b7280;
+}
+
+.nav a[href="#"]:hover::before {
+  content: 'Coming soon';
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #374151;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 10;
+}
+
 /* Blog Index Grid */
 .blog-grid {
   display: grid;
